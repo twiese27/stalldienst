@@ -1,0 +1,23 @@
+# Startet Stalldienst + Caddy (holt automatisch ein HTTPS-Zertifikat).
+# Einstellungen kommen aus der Datei .env im selben Ordner:
+#   DOMAIN=buttersheide-dienst.duckdns.org
+#   VAPID_CONTACT=mailto:deine-adresse@example.de
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      - VAPID_CONTACT=${VAPID_CONTACT}
+      - COOKIE_SECURE=1
+      - TZ=Europe/Berlin
+    volumes:
+      - ./data:/data
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    command: caddy reverse-proxy --from ${DOMAIN} --to app:3000
+    volumes:
+      - caddy_data:/data
+volumes:
+  caddy_data:
